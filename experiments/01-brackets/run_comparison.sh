@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run_comparison.sh — corre N corridas de cada backend y genera comparacion.png
+# run_comparison.sh — corre N ejecuciones de cada backend y genera comparacion.png
 
 set -euo pipefail
 
@@ -12,8 +12,8 @@ MAX_ITERS="${2:-10}"
 echo "========================================="
 echo " Loop Engineering — Experimento 01"
 echo " Tarea: is_balanced (brackets balanceados)"
-echo " Corridas por backend: $RUNS"
-echo " Máx iteraciones por corrida: $MAX_ITERS"
+echo " Ejecuciones por backend: $RUNS"
+echo " Máx iteraciones por ejecución: $MAX_ITERS"
 echo "========================================="
 echo
 

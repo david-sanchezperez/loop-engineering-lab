@@ -32,7 +32,7 @@ El loop necesita saber dónde está en cada momento. Sin estado persistente,
 si el proceso cae, todo lo aprendido se pierde y hay que empezar de cero.
 
 **En este repo:** cada iteración escribe `results/loop_state.json` con el
-backend, el número de corrida, la iteración actual, el estado (`running` /
+backend, el número de ejecución, la iteración actual, el estado (`running` /
 `success` / `circuit_breaker`) y un timestamp UTC.
 
 ```python
@@ -42,7 +42,7 @@ def write_heartbeat(state: dict) -> None:
     STATE_FILE.write_text(json.dumps(state, indent=2))
 ```
 
-Si el proceso muere en medio de una corrida, `loop_state.json` tiene el
+Si el proceso muere en medio de una ejecución, `loop_state.json` tiene el
 último estado conocido. En un sistema más sofisticado, este archivo permite
 reanudar desde donde se quedó.
 
@@ -331,7 +331,7 @@ Esto crea dependencia frágil: si algo cambia, nadie sabe cómo arreglarlo.
 si el modelo empieza a fallar más.
 
 **Solución:** skills como archivos de texto versionados, logging de `stop_reason`
-en cada corrida, métricas acumuladas en JSON, documentación del harness.
+en cada ejecución, métricas acumuladas en JSON, documentación del harness.
 
 ---
 

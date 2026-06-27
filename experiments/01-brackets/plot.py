@@ -90,7 +90,7 @@ def main() -> None:
                         ha="center", va="bottom", fontsize=10, fontweight="bold")
 
     bar(axes[0], "success_rate", "Tasa de éxito", "%", fmt=".0f", suffix="%", ylim_top=120)
-    bar(axes[1], "avg_iters", "Iteraciones promedio\n(todas las corridas)", "iteraciones")
+    bar(axes[1], "avg_iters", "Iteraciones promedio\n(todas las ejecuciones)", "iteraciones")
     bar(axes[2], "avg_time", "Tiempo promedio\n(segundos)", "s")
 
     fig.tight_layout()

@@ -22,12 +22,12 @@ pip install -r ../../requirements.txt
 El backend local requiere LiteLLM corriendo en `http://localhost:4000` con
 el modelo `qwen3`. El backend Claude requiere `ANTHROPIC_API_KEY` en el entorno.
 
-### Corrida completa (ambos backends)
+### Ejecución completa (ambos backends)
 
 ```bash
 export ANTHROPIC_API_KEY=sk-...
-bash run_comparison.sh 5        # 5 corridas por backend (default)
-bash run_comparison.sh 10 15    # 10 corridas, máx 15 iteraciones c/u
+bash run_comparison.sh 5        # 5 ejecuciones por backend (default)
+bash run_comparison.sh 10 15    # 10 ejecuciones, máx 15 iteraciones c/u
 ```
 
 ### Solo un backend
@@ -50,9 +50,9 @@ python plot.py
 | Métrica | Descripción |
 |---------|-------------|
 | `iterations` | Cuántos intentos necesitó el modelo para pasar todos los tests |
-| `success` | Si la corrida terminó con código correcto |
+| `success` | Si la ejecución terminó con código correcto |
 | `stop_reason` | `success`, `step_cap`, `circuit_breaker`, o `budget` (solo Claude) |
-| `wall_time_s` | Tiempo total de la corrida en segundos |
+| `wall_time_s` | Tiempo total de la ejecución en segundos |
 | `cost_usd` | Costo en USD (solo backend Claude) |
 
 ---
@@ -74,11 +74,11 @@ python plot.py
   modelos grandes conocen bien. El objetivo es validar el harness, no probar
   los límites del modelo. Los experimentos siguientes usarán tareas más complejas.
 
-- **Una sola tarea por corrida:** cada corrida parte de cero (prompt inicial
-  fresco). No hay memoria entre corridas — esto es intencional para que cada
-  corrida sea independiente y los resultados sean comparables.
+- **Una sola tarea por ejecución:** cada ejecución parte de cero (prompt inicial
+  fresco). No hay memoria entre ejecuciones — esto es intencional para que cada
+  ejecución sea independiente y los resultados sean comparables.
 
-- **Sin paralelismo:** las corridas son secuenciales. En un sistema real se
+- **Sin paralelismo:** las ejecuciones son secuenciales. En un sistema real se
   podrían correr en paralelo, pero eso complicaría la comparación de tiempos.
 
 - **Qwen3 es un modelo de reasoning:** el modelo local usa thinking antes de

@@ -37,7 +37,7 @@ mitades a la vez, con las 6 piezas necesarias: estado persistente, automatizaci�
 
 ---
 
-## Resultados reales (n=5 corridas cada backend)
+## Resultados reales (n=5 ejecuciones cada backend)
 
 | Métrica | Claude Haiku 4.5 | Qwen3-35B (local) |
 |---------|-----------------|-------------------|
@@ -68,7 +68,7 @@ loop-engineering-lab/
     └── 01-brackets/
         ├── loop.py                     # harness con los dos backends y los 4 frenos
         ├── plot.py                     # genera comparacion.png
-        ├── run_comparison.sh           # corre N corridas y genera el gráfico
+        ├── run_comparison.sh           # corre N ejecuciones y genera el gráfico
         ├── skills/balanced_brackets/
         │   └── SKILL.md               # especificación de la tarea (fuera del código)
         └── results/
