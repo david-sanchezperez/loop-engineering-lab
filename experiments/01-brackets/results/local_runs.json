@@ -1,0 +1,52 @@
+[
+  {
+    "backend": "local",
+    "model": "qwen3",
+    "run_id": 1,
+    "success": true,
+    "iterations": 2,
+    "stop_reason": "success",
+    "wall_time_s": 89.88,
+    "ts": "2026-06-27T16:36:38.974570+00:00"
+  },
+  {
+    "backend": "local",
+    "model": "qwen3",
+    "run_id": 2,
+    "success": true,
+    "iterations": 1,
+    "stop_reason": "success",
+    "wall_time_s": 21.2,
+    "ts": "2026-06-27T16:37:17.873056+00:00"
+  },
+  {
+    "backend": "local",
+    "model": "qwen3",
+    "run_id": 3,
+    "success": true,
+    "iterations": 3,
+    "stop_reason": "success",
+    "wall_time_s": 126.46,
+    "ts": "2026-06-27T16:39:24.334288+00:00"
+  },
+  {
+    "backend": "local",
+    "model": "qwen3",
+    "run_id": 4,
+    "success": true,
+    "iterations": 1,
+    "stop_reason": "success",
+    "wall_time_s": 41.14,
+    "ts": "2026-06-27T16:40:05.478556+00:00"
+  },
+  {
+    "backend": "local",
+    "model": "qwen3",
+    "run_id": 5,
+    "success": true,
+    "iterations": 2,
+    "stop_reason": "success",
+    "wall_time_s": 83.76,
+    "ts": "2026-06-27T16:41:29.238548+00:00"
+  }
+]

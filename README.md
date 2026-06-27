@@ -37,20 +37,22 @@ mitades a la vez, con las 6 piezas necesarias: estado persistente, automatizaci�
 
 ---
 
-## Resultados: Qwen3-35B local (n=5)
+## Resultados reales (n=5 corridas cada backend)
 
-> Claude Haiku pendiente de créditos API — se actualizará con resultados reales.
+| Métrica | Claude Haiku 4.5 | Qwen3-35B (local) |
+|---------|-----------------|-------------------|
+| Tasa de éxito | 100% (5/5) | 100% (5/5) |
+| Iteraciones promedio | 1.0 | 1.8 |
+| Rango de iteraciones | 1–1 | 1–3 |
+| Tiempo promedio | 1.3 s | 72.5 s |
+| Costo promedio | $0.00078 | $0 (local) |
+| Costo total (5 runs) | $0.0039 | — |
 
-| Métrica | Qwen3-35B (local) |
-|---------|-------------------|
-| Tasa de éxito | 100% (5/5) |
-| Iteraciones promedio | 1.8 |
-| Rango de iteraciones | 1–3 |
-| Tiempo promedio | 72.5 s |
-
-El modelo local resuelve la tarea correctamente en todas las corridas, pero no siempre en el
-primer intento — el edge case `"([)]"` (brackets con conteos iguales pero orden incorrecto) rompe
-las soluciones naive que no usan un stack.
+Claude Haiku resuelve la tarea correctamente en la primera iteración siempre.
+Qwen3-35B local necesita 1–3 intentos (avg 1.8) porque su modo de reasoning a veces lleva a una
+solución por conteo antes de corregirse con un stack. Ambos modelos alcanzan 100% de éxito.
+La diferencia de tiempo (1.3s vs 72.5s) refleja el thinking overhead de Qwen3 más la latencia
+de red a Anthropic versus inferencia local.
 
 ![Comparación](experiments/01-brackets/results/comparacion.png)
 
