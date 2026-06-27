@@ -1,3 +1,7 @@
+[🇬🇧 English](README.md) · [🇪🇸 Castellano](README.es.md)
+
+---
+
 # loop-engineering-lab
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -9,98 +13,96 @@
 > heartbeat, budget ceiling). Experiment 01 compares Claude Haiku vs. Qwen3-35B local on a
 > bracket-balancing task where naive solutions reliably fail.
 
----
+## What is loop engineering
 
-## Qué es loop engineering
+Loop engineering means designing the system that surrounds an agent, not just the prompt you give it.
+It has two inseparable halves: the **engine** (making the agent act on something real, observe the
+real result, and decide on its own when to stop) and the **brakes** (explicitly limiting how much
+damage it can do while no one is watching).
 
-Loop engineering es diseñar el sistema que rodea a un agente, no solo el prompt que se le da.
-Tiene dos mitades inseparables: el **motor** (hacer que el agente actúe sobre algo real, observe
-el resultado real, y decida solo cuándo parar) y los **frenos** (limitar explícitamente cuánto
-daño puede hacer mientras nadie lo está mirando).
+An agent without an engine is a chatbot. An agent without brakes is a system that can iterate
+indefinitely, spend unlimited money, or break things silently. Loop engineering means having both
+halves at once, with the 6 required pieces: persistent state, automation, isolation (blast radius),
+skills, connectors, and maker/checker sub-agents.
 
-Un agente sin motor es un chatbot. Un agente sin frenos es un sistema que puede iterar hasta el
-infinito, gastar dinero ilimitado, o romper cosas en silencio. Loop engineering es tener ambas
-mitades a la vez, con las 6 piezas necesarias: estado persistente, automatización, aislamiento
-(blast radius), skills, conectores, y sub-agentes maker/checker.
-
-→ Explicación completa en [`docs/loop-engineering-explicado.md`](docs/loop-engineering-explicado.md)
+→ Full explanation in [`docs/loop-engineering-explicado.md`](docs/loop-engineering-explicado.md)
 
 ---
 
-## Experimentos
+## Experiments
 
-| # | Tarea | Modelos | Estado |
-|---|-------|---------|--------|
-| [01 — Brackets](experiments/01-brackets/) | `is_balanced(s)`: detectar brackets balanceados | Qwen3-35B local vs. Claude Haiku 4.5 | ✓ Completo |
+| # | Task | Models | Status |
+|---|------|--------|--------|
+| [01 — Brackets](experiments/01-brackets/) | `is_balanced(s)`: detect balanced brackets | Qwen3-35B local vs. Claude Haiku 4.5 | ✓ Complete |
 
-*Más experimentos próximamente: tareas más complejas, herramientas externas via MCP, loops multi-agente.*
-
----
-
-## Resultados reales (n=5 ejecuciones cada backend)
-
-| Métrica | Claude Haiku 4.5 | Qwen3-35B (local) |
-|---------|-----------------|-------------------|
-| Tasa de éxito | 100% (5/5) | 100% (5/5) |
-| Iteraciones promedio | 1.0 | 1.8 |
-| Rango de iteraciones | 1–1 | 1–3 |
-| Tiempo promedio | 1.3 s | 72.5 s |
-| Costo promedio | $0.00078 | $0 (local) |
-| Costo total (5 runs) | $0.0039 | — |
-
-Claude Haiku resuelve la tarea correctamente en la primera iteración siempre.
-Qwen3-35B local necesita 1–3 intentos (avg 1.8) porque su modo de reasoning a veces lleva a una
-solución por conteo antes de corregirse con un stack. Ambos modelos alcanzan 100% de éxito.
-La diferencia de tiempo (1.3s vs 72.5s) refleja el thinking overhead de Qwen3 más la latencia
-de red a Anthropic versus inferencia local.
-
-![Comparación](experiments/01-brackets/results/comparacion.png)
+*More experiments coming: more complex tasks, external tools via MCP, multi-agent loops.*
 
 ---
 
-## Estructura
+## Real results (n=5 runs per backend)
+
+| Metric | Claude Haiku 4.5 | Qwen3-35B (local) |
+|--------|-----------------|-------------------|
+| Success rate | 100% (5/5) | 100% (5/5) |
+| Avg iterations | 1.0 | 1.8 |
+| Iteration range | 1–1 | 1–3 |
+| Avg wall time | 1.3 s | 72.5 s |
+| Avg cost | $0.00078 | $0 (local) |
+| Total cost (5 runs) | $0.0039 | — |
+
+Claude Haiku solves the task correctly on the first iteration every time.
+Qwen3-35B local needs 1–3 attempts (avg 1.8) because its reasoning mode sometimes reaches a
+counting-based solution before self-correcting to a stack. Both models achieve 100% success.
+The time difference (1.3s vs 72.5s) reflects Qwen3's thinking overhead plus network latency to
+Anthropic versus local inference.
+
+![Comparison](experiments/01-brackets/results/comparacion.png)
+
+---
+
+## Structure
 
 ```
 loop-engineering-lab/
 ├── docs/
-│   └── loop-engineering-explicado.md   # teoría completa con ejemplos del código
+│   └── loop-engineering-explicado.md   # full theory with code examples
 └── experiments/
     └── 01-brackets/
-        ├── loop.py                     # harness con los dos backends y los 4 frenos
-        ├── plot.py                     # genera comparacion.png
-        ├── run_comparison.sh           # lanza N ejecuciones y genera el gráfico
+        ├── loop.py                     # harness with both backends and 4 brakes
+        ├── plot.py                     # generates comparacion.png
+        ├── run_comparison.sh           # runs N executions and generates the chart
         ├── skills/balanced_brackets/
-        │   └── SKILL.md               # especificación de la tarea (fuera del código)
+        │   └── SKILL.md               # task specification (outside the code)
         └── results/
             ├── local_runs.json
-            ├── claude_runs.json        # se genera al ejecutar con ANTHROPIC_API_KEY
+            ├── claude_runs.json        # generated when running with ANTHROPIC_API_KEY
             └── comparacion.png
 ```
 
 ---
 
-## Cómo ejecutarlo
+## How to run
 
 ```bash
 pip install -r requirements.txt
 
-# Solo backend local (Qwen3 via LiteLLM en localhost:4000)
+# Local backend only (Qwen3 via LiteLLM at localhost:4000)
 cd experiments/01-brackets
 python3 loop.py --backend local --runs 5
 
-# Ambos backends
+# Both backends
 export ANTHROPIC_API_KEY=sk-...
 bash run_comparison.sh 5
 ```
 
 ---
 
-## Diseño del harness
+## Harness design
 
-El freno de presupuesto existe **literalmente solo** en el backend Claude — no hay una variable
-`budget` en el código del backend local, porque allí no hay costo real. Esta separación es
-intencional: un freno que no aplica no debe existir en el código path donde no aplica.
+The budget brake exists **literally only** in the Claude backend code path — there is no `budget`
+variable in the local backend code, because there is no real cost there. This separation is
+intentional: a brake that does not apply should not exist in the code path where it does not apply.
 
-El "checker" es el intérprete de Python corriendo tests deterministas, no el modelo
-evaluándose a sí mismo. La separación maker/checker es lo que hace que el loop converja
-en vez de que el modelo siempre diga que sí.
+The "checker" is the Python interpreter running deterministic tests, not the model evaluating
+itself. The maker/checker separation is what makes the loop converge instead of the model always
+saying yes.
