@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run_comparison.sh — corre N ejecuciones de cada backend y genera comparacion.png
+# run_comparison.sh — lanza N ejecuciones de cada backend y genera comparacion.png
 
 set -euo pipefail
 

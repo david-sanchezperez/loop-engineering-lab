@@ -290,7 +290,7 @@ un freno real da una falsa sensación de seguridad.
 El loop sigue indefinidamente porque no tiene step cap o el step cap es
 demasiado alto. Gasta recursos (tiempo, dinero, tokens) sin límite.
 
-**Síntoma:** el proceso corre "para siempre" o hasta que el servidor lo mata.
+**Síntoma:** el proceso se ejecuta indefinidamente o hasta que el servidor lo detiene.
 
 **Solución:** step cap duro, razonable para la tarea.
 

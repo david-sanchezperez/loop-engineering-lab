@@ -68,18 +68,18 @@ loop-engineering-lab/
     └── 01-brackets/
         ├── loop.py                     # harness con los dos backends y los 4 frenos
         ├── plot.py                     # genera comparacion.png
-        ├── run_comparison.sh           # corre N ejecuciones y genera el gráfico
+        ├── run_comparison.sh           # lanza N ejecuciones y genera el gráfico
         ├── skills/balanced_brackets/
         │   └── SKILL.md               # especificación de la tarea (fuera del código)
         └── results/
             ├── local_runs.json
-            ├── claude_runs.json        # se genera al correr con ANTHROPIC_API_KEY
+            ├── claude_runs.json        # se genera al ejecutar con ANTHROPIC_API_KEY
             └── comparacion.png
 ```
 
 ---
 
-## Cómo correrlo
+## Cómo ejecutarlo
 
 ```bash
 pip install -r requirements.txt

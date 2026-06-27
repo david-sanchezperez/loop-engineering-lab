@@ -11,7 +11,7 @@ iteraciones reales cuando el modelo no usa un stack.
 
 ---
 
-## Cómo correrlo
+## Cómo ejecutarlo
 
 ### Prerequisitos
 
@@ -37,7 +37,7 @@ python loop.py --backend local --runs 5 --max-iters 10
 python loop.py --backend claude --runs 5 --max-iters 10 --budget-usd 0.05
 ```
 
-### Regenerar gráfico sin correr experimentos
+### Regenerar gráfico sin lanzar experimentos
 
 ```bash
 python plot.py
@@ -79,7 +79,7 @@ python plot.py
   ejecución sea independiente y los resultados sean comparables.
 
 - **Sin paralelismo:** las ejecuciones son secuenciales. En un sistema real se
-  podrían correr en paralelo, pero eso complicaría la comparación de tiempos.
+  podrían ejecutarse en paralelo, pero eso complicaría la comparación de tiempos.
 
 - **Qwen3 es un modelo de reasoning:** el modelo local usa thinking antes de
   responder (`reasoning_content` separado del `content`). Esto lo hace más
