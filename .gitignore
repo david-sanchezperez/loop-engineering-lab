@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+.env
+
+# credenciales
+.env
+
+# resultados intermedios de estado
+experiments/*/results/loop_state.json
+
+# jupyter
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
