@@ -139,6 +139,7 @@ def run_tests(code: str) -> tuple[bool, str]:
         r = subprocess.run(
             [sys.executable, tmp],
             capture_output=True, text=True, timeout=10,
+            check=False,
         )
         if r.returncode == 0:
             return True, ""
