@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Genera comparacion.png a partir de claude_runs.json y qwen_runs.json."""
+"""Genera comparacion.png a partir de claude_runs.json, local_runs.json y muse_runs.json."""
 
 import json
 import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import numpy as np
 
 RESULTS_DIR = Path(__file__).parent / "results"
 
@@ -41,20 +39,23 @@ def stats(runs: list[dict]) -> dict:
 def main() -> None:
     claude_runs = load(RESULTS_DIR / "claude_runs.json")
     local_runs  = load(RESULTS_DIR / "local_runs.json")
+    muse_runs   = load(RESULTS_DIR / "muse_runs.json")
 
-    if not claude_runs and not local_runs:
+    if not claude_runs and not local_runs and not muse_runs:
         print("Error: no hay resultados. Corre primero run_comparison.sh", file=sys.stderr)
         sys.exit(1)
 
     cs = stats(claude_runs) if claude_runs else {}
     ls = stats(local_runs) if local_runs else {}
+    ms = stats(muse_runs) if muse_runs else {}
 
-    # Solo incluir backends con datos reales
     entries = []
     if cs:
         entries.append(("Claude\nHaiku 4.5", "#5B8CDB", cs))
     if ls:
         entries.append(("Qwen3 35B\n(local)", "#E07B39", ls))
+    if ms:
+        entries.append(("Muse-Glimmer\n30B", "#7BC96E", ms))
 
     labels = [e[0] for e in entries]
     colors = [e[1] for e in entries]
@@ -62,11 +63,20 @@ def main() -> None:
 
     n_claude = cs.get("n", 0)
     n_local  = ls.get("n", 0)
+    n_muse   = ms.get("n", 0)
 
-    fig, axes = plt.subplots(1, 3, figsize=(12, 5))
+    # Siempre 3 subplots: tasa de éxito, iteraciones promedio, tiempo promedio
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+
+    backend_info = f"(Claude n={n_claude}"
+    if n_local:
+        backend_info += f", Qwen3 n={n_local}"
+    if n_muse:
+        backend_info += f", Muse n={n_muse}"
+    backend_info += ")"
+
     fig.suptitle(
-        "Loop Engineering — Experimento 01: Brackets Balanceados\n"
-        f"(Claude n={n_claude}, Qwen3 n={n_local})",
+        f"Loop Engineering — Experimento 01: Brackets Balanceados\n{backend_info}",
         fontsize=13, fontweight="bold", y=1.02,
     )
 

@@ -10,8 +10,8 @@
 > **TL;DR** — Loop engineering means designing the *system around the agent*, not just the prompt.
 > This repo is a growing lab of experiments: each one runs a real agent loop, measures it with
 > deterministic tests, and shows what happens when you add proper brakes (step cap, circuit breaker,
-> heartbeat, budget ceiling). Experiment 01 compares Claude Haiku vs. Qwen3-35B local on a
-> bracket-balancing task where naive solutions reliably fail.
+> heartbeat, budget ceiling). Experiment 01 compares Claude Haiku, Qwen3-35B local, and
+> Muse-Glimmer-30B-GGUF on a bracket-balancing task where naive solutions reliably fail.
 
 ## What is loop engineering
 
@@ -33,7 +33,7 @@ skills, connectors, and maker/checker sub-agents.
 
 | # | Task | Models | Status |
 |---|------|--------|--------|
-| [01 — Brackets](experiments/01-brackets/) | `is_balanced(s)`: detect balanced brackets | Qwen3-35B local vs. Claude Haiku 4.5 | ✓ Complete |
+| [01 — Brackets](experiments/01-brackets/) | `is_balanced(s)`: detect balanced brackets | Qwen3-35B local · Claude Haiku 4.5 · Muse-Glimmer-30B-GGUF | ✓ Complete |
 
 *More experiments coming: more complex tasks, external tools via MCP, multi-agent loops.*
 
@@ -41,20 +41,24 @@ skills, connectors, and maker/checker sub-agents.
 
 ## Real results (n=5 runs per backend)
 
-| Metric | Claude Haiku 4.5 | Qwen3-35B (local) |
-|--------|-----------------|-------------------|
-| Success rate | 100% (5/5) | 100% (5/5) |
-| Avg iterations | 1.0 | 1.8 |
-| Iteration range | 1–1 | 1–3 |
-| Avg wall time | 1.3 s | 72.5 s |
-| Avg cost | $0.00078 | $0 (local) |
-| Total cost (5 runs) | $0.0039 | — |
+| Metric | Claude Haiku 4.5 | Qwen3-35B (local) | Muse-Glimmer-30B-GGUF (llama.cpp) |
+|--------|-----------------|-------------------|-----------------------------------|
+| Success rate | 100% (5/5) | 100% (5/5) | — (pending) |
+| Avg iterations | 1.0 | 1.8 | — (pending) |
+| Iteration range | 1–1 | 1–3 | — (pending) |
+| Avg wall time | 1.3 s | 72.5 s | — (pending) |
+| Avg cost | $0.00078 | $0 (local) | $0 (local) |
+| Total cost (5 runs) | $0.0039 | — | — (local) |
 
 Claude Haiku solves the task correctly on the first iteration every time.
 Qwen3-35B local needs 1–3 attempts (avg 1.8) because its reasoning mode sometimes reaches a
 counting-based solution before self-correcting to a stack. Both models achieve 100% success.
 The time difference (1.3s vs 72.5s) reflects Qwen3's thinking overhead plus network latency to
 Anthropic versus local inference.
+
+Muse-Glimmer-30B-GGUF runs via llama.cpp server (`localhost:8080`) using the OpenAI-compatible
+API endpoint. Configuration: `max_tokens=3000`, model identifier `muse-glimmer-30b`. Results
+pending when the server is running.
 
 ![Comparison](experiments/01-brackets/results/comparacion.png)
 
@@ -68,7 +72,7 @@ loop-engineering-lab/
 │   └── loop-engineering-explicado.md   # full theory with code examples
 └── experiments/
     └── 01-brackets/
-        ├── loop.py                     # harness with both backends and 4 brakes
+        ├── loop.py                     # harness with all three backends and 4 brakes
         ├── plot.py                     # generates comparacion.png
         ├── run_comparison.sh           # runs N executions and generates the chart
         ├── skills/balanced_brackets/
@@ -76,6 +80,7 @@ loop-engineering-lab/
         └── results/
             ├── local_runs.json
             ├── claude_runs.json        # generated when running with ANTHROPIC_API_KEY
+            ├── muse_runs.json          # generated when running Muse-Glimmer-30B server
             └── comparacion.png
 ```
 
@@ -90,7 +95,11 @@ pip install -r requirements.txt
 cd experiments/01-brackets
 python3 loop.py --backend local --runs 5
 
-# Both backends
+# Muse-Glimmer-30B backend (llama.cpp server at localhost:8080)
+python3 loop.py --backend muse --runs 5
+
+# All backends
+cd experiments/01-brackets
 export ANTHROPIC_API_KEY=sk-...
 bash run_comparison.sh 5
 ```

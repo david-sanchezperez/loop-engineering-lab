@@ -8,6 +8,7 @@ naive por conteo y fuerza que el modelo use un stack.
 
 Backends soportados:
   local   → LiteLLM proxy (Qwen3 via llama.cpp), sin costo por token
+  muse    → llama.cpp server (Muse-Glimmer-30B-GGUF), sin costo por token
   claude  → Anthropic API, con techo de presupuesto en USD
 
 Frenos implementados:
@@ -34,6 +35,10 @@ from pathlib import Path
 LOCAL_BASE_URL = "http://localhost:4000/v1"
 LOCAL_API_KEY  = "sk-litellm-local"
 LOCAL_MODEL    = "qwen3"
+
+MUSE_BASE_URL  = "http://localhost:8080/v1"
+MUSE_API_KEY   = "sk-muse-local"
+MUSE_MODEL     = "muse-glimmer-30b"
 
 CLAUDE_MODEL                  = "claude-haiku-4-5-20251001"
 CLAUDE_INPUT_PRICE_PER_TOKEN  = 0.80 / 1_000_000   # USD / token
@@ -228,6 +233,80 @@ def run_loop_local(max_iters: int, run_id: int) -> dict:
         "ts": datetime.now(timezone.utc).isoformat(),
     }
 
+# ── backend Muse-Glimmer-30B (llama.cpp server, sin costo) ───────────────────
+
+def _call_muse(messages: list[dict]) -> str:
+    from openai import OpenAI
+    client = OpenAI(base_url=MUSE_BASE_URL, api_key=MUSE_API_KEY)
+    resp = client.chat.completions.create(
+        model=MUSE_MODEL,
+        messages=messages,
+        max_tokens=3000,   # Muse-Glimmer-30B necesita tokens para reasoning + respuesta
+    )
+    return resp.choices[0].message.content or ""
+
+
+def run_loop_muse(max_iters: int, run_id: int) -> dict:
+    start       = time.time()
+    messages    = [{"role": "user", "content": build_initial_prompt()}]
+    last_error  = None
+    consecutive = 0
+    last_code   = ""
+    stop_reason = "unknown"
+    iteration   = 0
+
+    for iteration in range(1, max_iters + 1):
+        write_heartbeat({
+            "backend": "muse", "run_id": run_id, "iteration": iteration,
+            "status": "running", "ts": datetime.now(timezone.utc).isoformat(),
+        })
+
+        response  = _call_muse(messages)
+        last_code = extract_code(response)
+        success, error = run_tests(last_code)
+
+        if success:
+            stop_reason = "success"
+            write_heartbeat({
+                "backend": "muse", "run_id": run_id, "iteration": iteration,
+                "status": "success", "ts": datetime.now(timezone.utc).isoformat(),
+            })
+            return {
+                "backend": "muse", "model": MUSE_MODEL, "run_id": run_id,
+                "success": True, "iterations": iteration, "stop_reason": stop_reason,
+                "wall_time_s": round(time.time() - start, 2),
+                "ts": datetime.now(timezone.utc).isoformat(),
+            }
+
+        # circuit breaker
+        if error == last_error:
+            consecutive += 1
+        else:
+            consecutive = 1
+            last_error  = error
+
+        if consecutive >= CIRCUIT_BREAKER_THRESHOLD:
+            stop_reason = "circuit_breaker"
+            break
+
+        if iteration == max_iters:
+            stop_reason = "step_cap"
+            break
+
+        messages.append({"role": "assistant", "content": response})
+        messages.append({"role": "user", "content": build_correction_prompt(last_code, error)})
+
+    write_heartbeat({
+        "backend": "muse", "run_id": run_id, "iteration": iteration,
+        "status": stop_reason, "ts": datetime.now(timezone.utc).isoformat(),
+    })
+    return {
+        "backend": "muse", "model": MUSE_MODEL, "run_id": run_id,
+        "success": False, "iterations": iteration, "stop_reason": stop_reason,
+        "wall_time_s": round(time.time() - start, 2),
+        "ts": datetime.now(timezone.utc).isoformat(),
+    }
+
 # ── backend Claude (Anthropic API, con presupuesto) ───────────────────────────
 
 def _call_claude(messages: list[dict]) -> tuple[str, int, int, float]:
@@ -335,7 +414,7 @@ def run_loop_claude(max_iters: int, budget_usd: float, run_id: int) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Loop engineering harness — brackets balanceados")
-    parser.add_argument("--backend", choices=["local", "claude"], required=True)
+    parser.add_argument("--backend", choices=["local", "muse", "claude"], required=True)
     parser.add_argument("--runs", type=int, default=5)
     parser.add_argument("--max-iters", type=int, default=DEFAULT_MAX_ITERS)
     parser.add_argument("--budget-usd", type=float, default=DEFAULT_BUDGET_USD,
@@ -355,6 +434,8 @@ def main() -> None:
 
         if args.backend == "local":
             result = run_loop_local(args.max_iters, run_id)
+        elif args.backend == "muse":
+            result = run_loop_muse(args.max_iters, run_id)
         else:
             result = run_loop_claude(args.max_iters, args.budget_usd, run_id)
 

@@ -1,0 +1,1 @@
+{"Created":"2026-08-10T19:23:18.734381127Z","Name":"JI27fg98","name":"JI27fg98","deliver_policy":"all","ack_policy":"explicit","ack_wait":30000000000,"max_deliver":-1,"filter_subject":"iteratr.spec--t_ee06b109b1a847.\u003e","replay_policy":"instant","max_waiting":512,"max_ack_pending":1000,"num_replicas":0,"metadata":{"_nats.req.level":"0"}}

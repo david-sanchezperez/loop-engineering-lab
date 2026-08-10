@@ -11,8 +11,8 @@
 > prompt. Este repositorio es un laboratorio de experimentos en crecimiento: cada uno ejecuta un
 > loop de agente real, lo mide con tests deterministas y muestra qué ocurre cuando se añaden frenos
 > correctos (step cap, circuit breaker, heartbeat, techo de presupuesto). El experimento 01 compara
-> Claude Haiku con Qwen3-35B local en una tarea de detección de brackets balanceados donde las
-> soluciones naive fallan de forma predecible.
+> Claude Haiku, Qwen3-35B local y Muse-Glimmer-30B-GGUF en una tarea de detección de brackets
+> balanceados donde las soluciones naive fallan de forma predecible.
 
 ## Qué es loop engineering
 
@@ -34,7 +34,7 @@ mitades a la vez, con las 6 piezas necesarias: estado persistente, automatizaci�
 
 | # | Tarea | Modelos | Estado |
 |---|-------|---------|--------|
-| [01 — Brackets](experiments/01-brackets/) | `is_balanced(s)`: detectar brackets balanceados | Qwen3-35B local vs. Claude Haiku 4.5 | ✓ Completo |
+| [01 — Brackets](experiments/01-brackets/) | `is_balanced(s)`: detectar brackets balanceados | Qwen3-35B local · Claude Haiku 4.5 · Muse-Glimmer-30B-GGUF | ✓ Completo |
 
 *Más experimentos próximamente: tareas más complejas, herramientas externas via MCP, loops multi-agente.*
 
@@ -42,20 +42,24 @@ mitades a la vez, con las 6 piezas necesarias: estado persistente, automatizaci�
 
 ## Resultados reales (n=5 ejecuciones por backend)
 
-| Métrica | Claude Haiku 4.5 | Qwen3-35B (local) |
-|---------|-----------------|-------------------|
-| Tasa de éxito | 100% (5/5) | 100% (5/5) |
-| Iteraciones promedio | 1.0 | 1.8 |
-| Rango de iteraciones | 1–1 | 1–3 |
-| Tiempo promedio | 1.3 s | 72.5 s |
-| Costo promedio | $0.00078 | $0 (local) |
-| Costo total (5 ejecuciones) | $0.0039 | — |
+| Métrica | Claude Haiku 4.5 | Qwen3-35B (local) | Muse-Glimmer-30B-GGUF (llama.cpp) |
+|---------|-----------------|-------------------|-----------------------------------|
+| Tasa de éxito | 100% (5/5) | 100% (5/5) | — (pendiente) |
+| Iteraciones promedio | 1.0 | 1.8 | — (pendiente) |
+| Rango de iteraciones | 1–1 | 1–3 | — (pendiente) |
+| Tiempo promedio | 1.3 s | 72.5 s | — (pendiente) |
+| Costo promedio | $0.00078 | $0 (local) | $0 (local) |
+| Costo total (5 ejecuciones) | $0.0039 | — | — (local) |
 
 Claude Haiku resuelve la tarea correctamente en la primera iteración siempre.
 Qwen3-35B local necesita 1–3 intentos (media 1.8) porque su modo de reasoning a veces llega a una
 solución por conteo antes de corregirse con un stack. Ambos modelos alcanzan el 100% de éxito.
 La diferencia de tiempo (1.3s vs 72.5s) refleja el thinking overhead de Qwen3 más la latencia de
 red a Anthropic frente a inferencia local.
+
+Muse-Glimmer-30B-GGUF se ejecuta a través del servidor llama.cpp (`localhost:8080`) usando el
+endpoint de API compatible con OpenAI. Configuración: `max_tokens=3000`, identificador del modelo
+`muse-glimmer-30b`. Resultados pendientes cuando el servidor está ejecutándose.
 
 ![Comparación](experiments/01-brackets/results/comparacion.png)
 
@@ -69,7 +73,7 @@ loop-engineering-lab/
 │   └── loop-engineering-explicado.md   # teoría completa con ejemplos del código
 └── experiments/
     └── 01-brackets/
-        ├── loop.py                     # harness con los dos backends y los 4 frenos
+        ├── loop.py                     # harness con los tres backends y 4 frenos
         ├── plot.py                     # genera comparacion.png
         ├── run_comparison.sh           # lanza N ejecuciones y genera el gráfico
         ├── skills/balanced_brackets/
@@ -77,6 +81,7 @@ loop-engineering-lab/
         └── results/
             ├── local_runs.json
             ├── claude_runs.json        # se genera al ejecutar con ANTHROPIC_API_KEY
+            ├── muse_runs.json          # se genera al ejecutar con el servidor Muse-Glimmer-30B
             └── comparacion.png
 ```
 
@@ -91,7 +96,11 @@ pip install -r requirements.txt
 cd experiments/01-brackets
 python3 loop.py --backend local --runs 5
 
-# Ambos backends
+# Backend Muse-Glimmer-30B (servidor llama.cpp en localhost:8080)
+python3 loop.py --backend muse --runs 5
+
+# Todos los backends
+cd experiments/01-brackets
 export ANTHROPIC_API_KEY=sk-...
 bash run_comparison.sh 5
 ```

@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 # run_comparison.sh — lanza N ejecuciones de cada backend y genera comparacion.png
+#
+# Uso: bash run_comparison.sh [RUNS] [MAX_ITERS]
+#   RUNS      → ejecuciones por backend (default: 5)
+#   MAX_ITERS → máx iteraciones por ejecución (default: 10)
+#
+# Backends:
+#   local   → Qwen3 35B via LiteLLM / llama.cpp  (localhost:4000)
+#   muse    → Muse-Glimmer-30B-GGUF via llama.cpp  (localhost:8080)
+#   claude  → Claude Haiku 4.5  (requiere ANTHROPIC_API_KEY)
 
 set -euo pipefail
 
@@ -20,6 +29,11 @@ echo
 # ── backend local (Qwen3 via LiteLLM) ────────────────────────────────────────
 echo ">>> Backend LOCAL (Qwen3 35B cuantizado)"
 python loop.py --backend local --runs "$RUNS" --max-iters "$MAX_ITERS"
+echo
+
+# ── backend Muse-Glimmer-30B (llama.cpp server) ──────────────────────────────
+echo ">>> Backend MUSE (Muse-Glimmer-30B-GGUF via llama.cpp)"
+python loop.py --backend muse --runs "$RUNS" --max-iters "$MAX_ITERS"
 echo
 
 # ── backend Claude ────────────────────────────────────────────────────────────
