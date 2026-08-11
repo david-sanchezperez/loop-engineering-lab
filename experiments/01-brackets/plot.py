@@ -6,8 +6,6 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import numpy as np
 
 RESULTS_DIR = Path(__file__).parent / "results"
 

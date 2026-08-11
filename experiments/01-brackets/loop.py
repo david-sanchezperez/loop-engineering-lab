@@ -158,13 +158,17 @@ def write_heartbeat(state: dict) -> None:
 
 def _call_local(messages: list[dict]) -> str:
     from openai import OpenAI
-    client = OpenAI(base_url=LOCAL_BASE_URL, api_key=LOCAL_API_KEY)
-    resp = client.chat.completions.create(
-        model=LOCAL_MODEL,
-        messages=messages,
-        max_tokens=3000,   # Qwen3 thinking consume tokens antes del contenido real
-    )
-    return resp.choices[0].message.content or ""
+    try:
+        client = OpenAI(base_url=LOCAL_BASE_URL, api_key=LOCAL_API_KEY)
+        resp = client.chat.completions.create(
+            model=LOCAL_MODEL,
+            messages=messages,
+            max_tokens=3000,   # Qwen3 thinking consume tokens antes del contenido real
+        )
+        return resp.choices[0].message.content or ""
+    except Exception as e:
+        # Re-raise with a more descriptive error message
+        raise Exception(f"LLM API error: {e!s}")
 
 
 def run_loop_local(max_iters: int, run_id: int) -> dict:
@@ -182,9 +186,16 @@ def run_loop_local(max_iters: int, run_id: int) -> dict:
             "status": "running", "ts": datetime.now(timezone.utc).isoformat(),
         })
 
-        response  = _call_local(messages)
-        last_code = extract_code(response)
-        success, error = run_tests(last_code)
+        try:
+            response  = _call_local(messages)
+        except Exception as api_error:
+            # Treat LLM API errors as test failures to trigger circuit breaker
+            error = f"LLM API error: {api_error!s}"
+            success = False
+            response = ""  # No response from LLM
+        else:
+            last_code = extract_code(response)
+            success, error = run_tests(last_code)
 
         if success:
             stop_reason = "success"
@@ -214,8 +225,10 @@ def run_loop_local(max_iters: int, run_id: int) -> dict:
             stop_reason = "step_cap"
             break
 
-        messages.append({"role": "assistant", "content": response})
-        messages.append({"role": "user", "content": build_correction_prompt(last_code, error)})
+        # Only continue the conversation if we got a response from LLM
+        if response:  # If there was no response due to API error, don't continue
+            messages.append({"role": "assistant", "content": response})
+            messages.append({"role": "user", "content": build_correction_prompt(last_code, error)})
 
     write_heartbeat({
         "backend": "local", "run_id": run_id, "iteration": iteration,
@@ -234,19 +247,23 @@ def _call_claude(messages: list[dict]) -> tuple[str, int, int, float]:
     """Retorna (content, input_tokens, output_tokens, cost_usd)."""
     import anthropic
 
-    client = anthropic.Anthropic()
-    anthropic_msgs = [m for m in messages if m["role"] != "system"]
+    try:
+        client = anthropic.Anthropic()
+        anthropic_msgs = [m for m in messages if m["role"] != "system"]
 
-    resp = client.messages.create(
-        model=CLAUDE_MODEL,
-        max_tokens=1024,
-        messages=anthropic_msgs,
-    )
-    content  = resp.content[0].text
-    in_tok   = resp.usage.input_tokens
-    out_tok  = resp.usage.output_tokens
-    cost_usd = in_tok * CLAUDE_INPUT_PRICE_PER_TOKEN + out_tok * CLAUDE_OUTPUT_PRICE_PER_TOKEN
-    return content, in_tok, out_tok, cost_usd
+        resp = client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=1024,
+            messages=anthropic_msgs,
+        )
+        content  = resp.content[0].text
+        in_tok   = resp.usage.input_tokens
+        out_tok  = resp.usage.output_tokens
+        cost_usd = in_tok * CLAUDE_INPUT_PRICE_PER_TOKEN + out_tok * CLAUDE_OUTPUT_PRICE_PER_TOKEN
+        return content, in_tok, out_tok, cost_usd
+    except Exception as e:
+        # Re-raise with a more descriptive error message
+        raise Exception(f"LLM API error: {e!s}")
 
 
 def run_loop_claude(max_iters: int, budget_usd: float, run_id: int) -> dict:
@@ -275,13 +292,19 @@ def run_loop_claude(max_iters: int, budget_usd: float, run_id: int) -> dict:
             break
         # ─────────────────────────────────────────────────────────────────────
 
-        response, in_tok, out_tok, cost = _call_claude(messages)
-        total_in_tok  += in_tok
-        total_out_tok += out_tok
-        total_cost    += cost
-
-        last_code = extract_code(response)
-        success, error = run_tests(last_code)
+        try:
+            response, in_tok, out_tok, cost = _call_claude(messages)
+            total_in_tok  += in_tok
+            total_out_tok += out_tok
+            total_cost    += cost
+        except Exception as api_error:
+            # Treat LLM API errors as test failures to trigger circuit breaker
+            error = f"LLM API error: {api_error!s}"
+            success = False
+            response = ""
+        else:
+            last_code = extract_code(response)
+            success, error = run_tests(last_code)
 
         if success:
             stop_reason = "success"
@@ -314,8 +337,10 @@ def run_loop_claude(max_iters: int, budget_usd: float, run_id: int) -> dict:
             stop_reason = "step_cap"
             break
 
-        messages.append({"role": "assistant", "content": response})
-        messages.append({"role": "user", "content": build_correction_prompt(last_code, error)})
+        # Only continue the conversation if we got a response from LLM
+        if response:  # If there was no response due to API error, don't continue
+            messages.append({"role": "assistant", "content": response})
+            messages.append({"role": "user", "content": build_correction_prompt(last_code, error)})
 
     write_heartbeat({
         "backend": "claude", "run_id": run_id, "iteration": iteration,
