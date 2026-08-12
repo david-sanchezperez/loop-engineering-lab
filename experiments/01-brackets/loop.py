@@ -33,7 +33,7 @@ from pathlib import Path
 
 LOCAL_BASE_URL = "http://localhost:4000/v1"
 LOCAL_API_KEY  = "sk-litellm-local"
-LOCAL_MODEL    = "qwen3"
+LOCAL_MODEL    = "devstral"
 
 CLAUDE_MODEL                  = "claude-haiku-4-5-20251001"
 CLAUDE_INPUT_PRICE_PER_TOKEN  = 0.80 / 1_000_000   # USD / token

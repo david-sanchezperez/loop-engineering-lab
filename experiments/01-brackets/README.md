@@ -20,7 +20,9 @@ pip install -r ../../requirements.txt
 ```
 
 El backend local requiere LiteLLM corriendo en `http://localhost:4000` con
-el modelo `qwen3`. El backend Claude requiere `ANTHROPIC_API_KEY` en el entorno.
+el modelo `devstral` (antes `qwen3` — producción migró a Devstral el
+2026-08-11, ver `local-llm-arena/README.md` para la comparativa). El backend
+Claude requiere `ANTHROPIC_API_KEY` en el entorno.
 
 ### Ejecución completa (ambos backends)
 
