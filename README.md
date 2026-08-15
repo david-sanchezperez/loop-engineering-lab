@@ -65,7 +65,8 @@ Anthropic versus local inference.
 ```
 loop-engineering-lab/
 ├── docs/
-│   └── loop-engineering-explicado.md   # full theory with code examples
+│   ├── loop-engineering-explicado.md   # full theory with code examples
+│   └── llama-server-qwen3-27b-rtx3090.md  # local stack: llama-server + LiteLLM
 └── experiments/
     └── 01-brackets/
         ├── loop.py                     # harness with both backends and 4 brakes

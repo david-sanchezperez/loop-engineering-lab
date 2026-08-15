@@ -66,7 +66,8 @@ red a Anthropic frente a inferencia local.
 ```
 loop-engineering-lab/
 ├── docs/
-│   └── loop-engineering-explicado.md   # teoría completa con ejemplos del código
+│   ├── loop-engineering-explicado.md   # teoría completa con ejemplos del código
+│   └── llama-server-qwen3-27b-rtx3090.md  # stack local: llama-server + LiteLLM
 └── experiments/
     └── 01-brackets/
         ├── loop.py                     # harness con los dos backends y los 4 frenos
