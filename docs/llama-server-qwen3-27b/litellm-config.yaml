@@ -1,0 +1,29 @@
+# LiteLLM proxy — apunta a llama-server (Qwen3.8-27B) y expone el modelo "qwen3"
+#
+# Uso:
+#   litellm --config litellm-config.yaml --port 4000
+#
+# El cliente del lab (experiments/01-brackets/loop.py) espera:
+#   base_url = http://localhost:4000/v1
+#   api_key  = sk-litellm-local
+#   model    = qwen3
+#
+# llama-server corre en http://127.0.0.1:8080 (ver README.md de esta carpeta).
+
+model_list:
+  - model_name: qwen3
+    litellm_params:
+      # "openai/<nombre>" => ruta OpenAI-compatible hacia el api_base.
+      # llama-server sirve un único modelo cargado, así que el nombre que se
+      # pasa "aguas abajo" es informativo; el enrutamiento real lo hace LiteLLM
+      # con el model_name de arriba.
+      model: openai/qwen3.8-27b
+      api_base: http://127.0.0.1:8080/v1
+      # llama-server no exige auth por defecto, pero LiteLLM requiere una key
+      # no vacía para proveedores "openai/". Valor dummy, nunca sale del host.
+      api_key: sk-llamacpp
+
+general_settings:
+  # Clave maestra del proxy: es la que el cliente del lab envía como
+  # Authorization: Bearer sk-litellm-local
+  master_key: sk-litellm-local
