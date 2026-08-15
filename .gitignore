@@ -24,3 +24,7 @@ experiments/*/results/loop_state.json
 
 # macOS
 .DS_Store
+
+.iteratr/
+.opencode/
+spec--*.md
