@@ -7,7 +7,7 @@ están correctamente anidados. El caso "([)]" es el que rompe soluciones
 naive por conteo y fuerza que el modelo use un stack.
 
 Backends soportados:
-  local   → LiteLLM proxy (Qwen3 via llama.cpp), sin costo por token
+  local   → LiteLLM proxy (alias "local", el modelo local vigente vía llama.cpp), sin costo por token
   claude  → Anthropic API, con techo de presupuesto en USD
 
 Frenos implementados:
@@ -33,7 +33,7 @@ from pathlib import Path
 
 LOCAL_BASE_URL = "http://localhost:4000/v1"
 LOCAL_API_KEY  = "sk-litellm-local"
-LOCAL_MODEL    = "devstral"
+LOCAL_MODEL    = "local"
 
 CLAUDE_MODEL                  = "claude-haiku-4-5-20251001"
 CLAUDE_INPUT_PRICE_PER_TOKEN  = 0.80 / 1_000_000   # USD / token
